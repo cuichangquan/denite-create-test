@@ -16,6 +16,15 @@ class Source(Base):
         print('on_init')
 
     def gather_candidates(self, context):
-        return [{'word': "cui_23123123"}, {'word': "chang_666666"}]
+        return [
+                {
+                    'word': "file1",
+                    'action__path': "~/sai/my-work-helper/agignore"
+                    },
+                {
+                    'word': "file2",
+                    'action__path': "~/sai/my-work-helper/command.txt"
+                    },
+                ]
 
     # def _convert(self, info):
