@@ -3,8 +3,8 @@
 # 参考: https://qiita.com/iyuuya/items/8a7e9cc0c9dd6d0e4c32
 # http://koturn.hatenablog.com/category/neovim
 from .base import Base
-import logging.config
-logging.basicConfig(filename='/Users/changquancui/cui.log',level=logging.DEBUG)
+import logging
+logging.basicConfig(filename='cui.log',level=logging.DEBUG)
 
 class Source(Base):
 
