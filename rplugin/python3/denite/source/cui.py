@@ -6,6 +6,10 @@ from .base import Base
 import logging
 logging.basicConfig(filename='cui.log',level=logging.DEBUG)
 
+# TODO
+# source: log/development.logから以下の情報を取ってくる
+# Log:  GET "/sai/admin" => SessionsController#login_for_org [時間]
+# defualt_action: 「SessionsController#login_for_org」の gfアクション
 class Source(Base):
 
     def __init__(self, vim):
@@ -13,8 +17,11 @@ class Source(Base):
         self.name = 'cui'
         self.kind = 'file'
 
-    def on_init(self, context):
-        print('on_init')
+    # def on_init(self, context):
+        # TODO
+
+    # def on_close(self, context):
+        # TODO
 
     def gather_candidates(self, context):
         logging.debug(self)
