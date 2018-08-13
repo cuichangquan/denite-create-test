@@ -54,7 +54,7 @@ class Source(Base):
         f.close()
         target_lines = self._find_lines(lines)
         target_lines.reverse()
-        return [self._convert(line) for line in target_lines]
+        return [self._convert(k, v) for k, v in target_lines]
 
     # [2018-08-06 10:31:29.948889 #1]  INFO -- : [ad6d6c30799cd639d4975cf063e5f1ae] Started GET "/xxx/admin" for 172.18.0.7 at 2018-08-06 10:31:29 +0900
     # [2018-08-06 10:31:39.006463 #1]  INFO -- : [ad6d6c30799cd639d4975cf063e5f1ae] Processing by SessionsController#create as HTML
@@ -70,7 +70,7 @@ class Source(Base):
             if request_id in target_value_lines:
                 value = target_value_lines[request_id]
                 if(key is not None) and (value is not None):
-                    target_lines.append(key + ' => ' + value)
+                    target_lines.append([key, value])
 
         return target_lines
 
@@ -110,8 +110,8 @@ class Source(Base):
             value = result[2]
         return value
 
-    def _convert(self, info):
+    def _convert(self, key, value):
         return {
-                    'word': info,
-                    'action__path': "~/sai/my-work-helper/agignore"
+                    'word': key + ' => ' + value,
+                    'action__path': value        # TODO
                 }
