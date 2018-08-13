@@ -24,8 +24,6 @@ logger.setLevel(10)
 # https://github.com/Shougo/denite.nvim/blob/master/rplugin/python3/denite/__init__.py
 
 class Source(Base):
-    meta_keyword1 = "Started"
-    meta_keyword2 = "Processing"
     request_id_pattern = re.compile("\[[a-z0-9]{32}\]")
     request_path_pattern = re.compile("(\sStarted\s)(.*)(\sfor\s)")
     request_action_pattern = re.compile("(\sProcessing\sby\s)(.*)(\sas\s)")
@@ -61,38 +59,51 @@ class Source(Base):
     # [2018-08-06 10:31:29.948889 #1]  INFO -- : [ad6d6c30799cd639d4975cf063e5f1ae] Started GET "/xxx/admin" for 172.18.0.7 at 2018-08-06 10:31:29 +0900
     # [2018-08-06 10:31:39.006463 #1]  INFO -- : [ad6d6c30799cd639d4975cf063e5f1ae] Processing by SessionsController#create as HTML
     def _find_lines(self, lines):
-
+        target_key_lines = {}
+        target_value_lines = {}
         target_lines = []
         for line in lines:
-          if(line.find(Source.meta_keyword1) >= 0 or line.find(Source.meta_keyword2) >= 0):
-              target_lines.append(line)
+            target_key_lines.update(self.make_target_key_lines(line))
+            target_value_lines.update(self.make_target_value_lines(line))
 
-        request_id = None
-        log_key = None
-        new_target_lines =[]
-        for line in target_lines:
-            if (request_id is not None) and (line.find(request_id)) and (log_key is not None):
-                log_value = self._make_value_from_line(line)
-                if (log_key is not None) and (log_value is not None):
-                    new_target_lines.append(log_key + '=>' + log_value)
-                request_id = None
-                log_key = None
-            else:
-                result = Source.request_id_pattern.search(line)
-                if result is not None:
-                    request_id = result[0]
-                    log_key = self._make_key_from_line(line)
+        for request_id, key in target_key_lines.items():
+            if request_id in target_value_lines:
+                value = target_value_lines[request_id]
+                if(key is not None) and (value is not None):
+                    target_lines.append(key + ' => ' + value)
 
-        return new_target_lines
+        return target_lines
 
-    def _make_key_from_line(self, line):
+    def make_target_key_lines(self, line):
+        target_lines = {}
+        if line.find("Started") >= 0:
+            result = Source.request_id_pattern.search(line)
+            if result is not None:
+                request_id = result[0]
+                request_path = self.get_request_path(line)
+                if request_path is not None:
+                    target_lines[request_id] = request_path
+        return target_lines
+
+    def make_target_value_lines(self, line):
+        target_lines = {}
+        if line.find("Processing") >= 0:
+            result = Source.request_id_pattern.search(line)
+            if result is not None:
+                request_id = result[0]
+                action = self.get_rails_action(line)
+                if action is not None:
+                    target_lines[request_id] = action
+        return target_lines
+
+    def get_request_path(self, line):
         result = Source.request_path_pattern.search(line)
         key = None
         if result is not None:
             key = line[:20] + '] ' + result[2]
         return key
 
-    def _make_value_from_line(self, line):
+    def get_rails_action(self, line):
         result = Source.request_action_pattern.search(line)
         value = None
         if result is not None:
@@ -100,7 +111,6 @@ class Source(Base):
         return value
 
     def _convert(self, info):
-
         return {
                     'word': info,
                     'action__path': "~/sai/my-work-helper/agignore"
