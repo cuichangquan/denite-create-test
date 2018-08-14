@@ -9,6 +9,7 @@ import logging
 import os
 import site
 import re
+import inflection
 
 logger = logging.getLogger('DeniteSourceCuiLog')
 logger.setLevel(10)
@@ -36,12 +37,11 @@ class Source(Base):
     def on_init(self, context):
         cbname = self.vim.current.buffer.name
         context['__cbname'] = cbname
-        root_path = util.path2project(self.vim, cbname, context.get('root_markers', ''))
-        context['__root_path'] = root_path
-        context['__target_file'] = root_path + '/log/development.log'
+        self.root_path = util.path2project(self.vim, cbname, context.get('root_markers', ''))
+        context['__target_file'] = self.root_path + '/log/development.log'
 
-        if 'denite-create-test' in root_path:
-            fh = logging.FileHandler(root_path + '/log/cui.log')
+        if 'denite-create-test' in self.root_path:
+            fh = logging.FileHandler(self.root_path + '/log/cui.log')
             logger.addHandler(fh)
 
     # def on_close(self, context):
@@ -113,5 +113,14 @@ class Source(Base):
     def _convert(self, key, value):
         return {
                     'word': key + ' => ' + value,
-                    'action__path': value        # TODO
+                    'action__path': self.get_rails_controller_file_name(value),
+                    'action__pattern': '\<def ' + self.get_rails_action_action(value) + '\>'
                 }
+
+    def get_rails_action_action(self, value):
+        return value.split('#')[-1]
+
+    def get_rails_controller_file_name(self, value):
+        conroller_name = value.split('#')[0]
+        conroller_name = inflection.underscore(conroller_name).replace('::', '/')
+        return self.root_path + '/app/controllers/' + conroller_name + '.rb'
