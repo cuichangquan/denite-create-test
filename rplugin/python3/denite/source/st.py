@@ -35,13 +35,13 @@ class Source(Base):
     # git diff @^ --name-only
     # git diff @^^ --name-only
     def gather_candidates(self, context):
-        number = context['input']
+        number = context['args']
 
-        if number is None:
+        if number == []:
             git_command = 'git diff @ --name-only'
         else:
             # :Denite -input=1 st
-            git_command = f'git diff @~{number} --name-only'
+            git_command = f'git diff @~{number[0]} --name-only'
 
         files = self.exec_cmd(git_command)
         return [self._convert(f) for f in files]
