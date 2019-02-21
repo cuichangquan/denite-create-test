@@ -24,8 +24,9 @@ logger.setLevel(10)
 # これを分析してみたほうがいい。
 # https://github.com/Shougo/denite.nvim/blob/master/rplugin/python3/denite/__init__.py
 
+# rails5: [ab61d588-348f-4b96-8f7d-a919ca21a82e]
 class Source(Base):
-    request_id_pattern = re.compile("\[[a-z0-9]{32}\]")
+    request_id_pattern = re.compile("\[[a-z0-9]{32}\]|\[[a-z0-9-]{36}\]")
     request_path_pattern = re.compile("(\sStarted\s)(.*)(\sfor\s)")
     request_action_pattern = re.compile("(\sProcessing\sby\s)(.*)(\sas\s)")
 
