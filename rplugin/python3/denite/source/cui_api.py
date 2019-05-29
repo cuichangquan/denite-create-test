@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # 以下のようなRailsログにて、アクセス解析する
-# 2019-03-03 11:17:53.541382 I [13042:puma 003] {request_id: d25efb37-436b-4fec-968a-afe1f1f79c9b, user_type: api_call} (29.6ms) Sys::Api::OrdersController -- Completed #update -- { :controller => "Sys::Api::OrdersController"・・・ }
+# 2019-03-03 11:17:53.541382 I [13042:puma 003] {request_id: d25efb37-436b-4fec-968a-afe1f1f79c9b, user_type: api_call} (29.6ms) Api::OrdersController -- Completed #update -- { :controller => "Api::OrdersController"・・・ }
 
 from .base import Base
 from denite import util
