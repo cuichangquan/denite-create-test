@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# 今まで編集したことがあるファイル一覧
 
 from .base import Base
 from denite import util
