@@ -40,8 +40,7 @@ class Source(Base):
         cbname = self.vim.current.buffer.name
         context['__cbname'] = cbname
         self.root_path = util.path2project(self.vim, cbname, context.get('root_markers', ''))
-        target_file = os.getenv('DENITE_CUI_LOG_FILE', self.root_path + Source.default_log_file)
-        context['__target_file'] = target_file
+        context['__target_file'] = self.root_path + Source.default_log_file
 
         if 'denite-create-test' in self.root_path:
             fh = logging.FileHandler(self.root_path + '/log/cui.log')
