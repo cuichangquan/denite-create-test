@@ -32,14 +32,15 @@ class Source(Base):
         context['__cbname'] = cbname
         self.root_path = util.path2project(self.vim, cbname, context.get('root_markers', ''))
 
+        buffer_name, ext = os.path.splitext(cbname)
         if ext == '.log':
             context['__target_file'] = cbname
         else:
             context['__target_file'] = self.root_path + Source.default_log_file
 
-        # if 'denite-create-test' in self.root_path:
-        fh = logging.FileHandler(self.root_path + '/log/cui_api.log')
-        logger.addHandler(fh)
+        if 'denite-create-test' in self.root_path:
+            fh = logging.FileHandler(self.root_path + '/log/cui_api.log')
+            logger.addHandler(fh)
 
     def gather_candidates(self, context):
         # logger.info(self.root_path)
