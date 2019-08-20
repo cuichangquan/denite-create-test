@@ -20,6 +20,7 @@ class Source(Base):
     request_path_pattern = re.compile(",\s:path\s=>\s\"(.*)\",")
     # 文字に対して、色をつけているコード(ANSI color codes)
     ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    default_log_file = '/log/development.log'
 
     def __init__(self, vim):
         super().__init__(vim)
@@ -30,7 +31,11 @@ class Source(Base):
         cbname = self.vim.current.buffer.name
         context['__cbname'] = cbname
         self.root_path = util.path2project(self.vim, cbname, context.get('root_markers', ''))
-        context['__target_file'] = self.root_path + '/log/development.log'
+
+        if ext == '.log':
+            context['__target_file'] = cbname
+        else:
+            context['__target_file'] = self.root_path + Source.default_log_file
 
         # if 'denite-create-test' in self.root_path:
         fh = logging.FileHandler(self.root_path + '/log/cui_api.log')
