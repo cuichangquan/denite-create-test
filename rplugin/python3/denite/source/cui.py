@@ -47,6 +47,7 @@ class Source(Base):
         #   - development.log以外のファイルを処理したい時:
         #     - 拡張子: log
         #     - log/の下においてください。
+        #     - vimで処理したいファイルを開いてください
         if (buffer_name != '') and (buffer_name != 'development.log'):
             context['__target_file'] = cbname
         else:
