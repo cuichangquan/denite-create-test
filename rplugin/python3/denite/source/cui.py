@@ -41,10 +41,16 @@ class Source(Base):
         context['__cbname'] = cbname
         self.root_path = util.path2project(self.vim, cbname, context.get('root_markers', ''))
 
-        buffer_name, ext = os.path.splitext(cbname)
-        if ext == '.log':
+        buffer_name = os.path.basename(cbname)
+        # 注意:
+        #   - プロジェクトのRootの下でNeoVimを開いてください
+        #   - development.log以外のファイルを処理したい時:
+        #     - 拡張子: log
+        #     - log/の下においてください。
+        if (buffer_name != '') and (buffer_name != 'development.log'):
             context['__target_file'] = cbname
         else:
+            # これは本来の使い方です。
             context['__target_file'] = self.root_path + Source.default_log_file
 
         if 'denite-create-test' in self.root_path:
