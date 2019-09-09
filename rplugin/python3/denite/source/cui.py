@@ -42,13 +42,14 @@ class Source(Base):
         self.root_path = util.path2project(self.vim, cbname, context.get('root_markers', ''))
 
         buffer_name = os.path.basename(cbname)
+        _, ext = os.path.splitext(cbname)
         # 注意:
         #   - プロジェクトのRootの下でNeoVimを開いてください
         #   - development.log以外のファイルを処理したい時:
         #     - 拡張子: log
         #     - log/の下においてください。
         #     - vimで処理したいファイルを開いてください
-        if (buffer_name != '') and (buffer_name != 'development.log'):
+        if (ext == 'log') and (buffer_name != '') and (buffer_name != 'development.log'):
             context['__target_file'] = cbname
         else:
             # これは本来の使い方です。
