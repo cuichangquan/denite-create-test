@@ -49,7 +49,7 @@ class Source(Base):
         #     - 拡張子: log
         #     - log/の下においてください。
         #     - vimで処理したいファイルを開いてください
-        if (ext == 'log') and (buffer_name != '') and (buffer_name != 'development.log'):
+        if (ext == '.log') and (buffer_name != '') and (buffer_name != 'development.log'):
             context['__target_file'] = cbname
         else:
             # これは本来の使い方です。
