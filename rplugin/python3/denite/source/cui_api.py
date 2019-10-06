@@ -16,8 +16,8 @@ logger.setLevel(10)
 
 class Source(Base):
     # この行はone requestのなかで1つしかないと思っている
-    pattern = re.compile("request_id: [a-z0-9-]{36}.*ms\)\s(.*Controller)\s--\sCompleted\s#(.*)\s--\s(.*)")
-    request_path_pattern = re.compile(",\s:path\s=>\s\"(.*)\",")
+    pattern = re.compile("request_id: [a-z0-9-]{36}.*[ms|s]\)\s(.*Controller)\s--\sCompleted\s#(.*)\s--\s(.*)")
+    request_path_pattern = re.compile(",\s?:method\s?=>\s?\"(.*)\",.*\s?:path\s?=>\s?\"(.*)\",")
     # 文字に対して、色をつけているコード(ANSI color codes)
     # ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     default_log_file = '/log/development.log'
@@ -40,11 +40,13 @@ class Source(Base):
         #     - 拡張子: log
         #     - log/の下においてください。
         #     - vimで処理したいファイルを開いてください
-        if (ext == 'ext') and (buffer_name != '') and (buffer_name != 'development.log'):
+        if (ext == '.log') and (buffer_name != '') and (buffer_name != 'development.log'):
             context['__target_file'] = cbname
         else:
             context['__target_file'] = self.root_path + Source.default_log_file
 
+        # ログ見たいのであれば、development.logを denite-create-test/log/にいれてください。
+        # tail -f log/cui_api.log
         if 'denite-create-test' in self.root_path:
             fh = logging.FileHandler(self.root_path + '/log/cui_api.log')
             logger.addHandler(fh)
@@ -53,12 +55,8 @@ class Source(Base):
         # logger.info(self.root_path)
         target_file = context['__target_file']
         f = open(target_file, 'r')
-        lines_without_ansi_color_code = f.readlines()
+        lines = f.readlines()
         f.close()
-
-        lines = []
-        for line in lines_without_ansi_color_code:
-            lines.append(line)
 
         target_lines = self._find_lines(lines)
         target_lines.reverse()
@@ -69,7 +67,6 @@ class Source(Base):
         target_lines = []
         for line in lines:
             result = Source.pattern.search(line)
-            logger.info(result)
             if result is not None:
                 date_time = line[0:19]
                 target_lines.append([date_time, result])
@@ -79,6 +76,7 @@ class Source(Base):
         controller_name = result[1]
         action_name     = result[2]
         params          = result[3]
+        # logger.info(params)
         return {
                     'word': '['+ date_time + '] ' + self.get_request_path(params) + ' => ' + controller_name + "#" + action_name,
                     'action__path': self.get_controller_full_name(controller_name),
@@ -88,7 +86,7 @@ class Source(Base):
     def get_request_path(self, params):
         request_path = Source.request_path_pattern.search(params)
         if request_path is not None:
-            return request_path[1]
+            return request_path[1] + ' ' + request_path[2]
 
     def get_controller_full_name(self, conroller_name):
         conroller_name = inflection.underscore(conroller_name).replace('::', '/')
