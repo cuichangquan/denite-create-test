@@ -16,8 +16,18 @@ logger.setLevel(10)
 
 class Source(Base):
     # この行はone requestのなかで1つしかないと思っている
-    pattern = re.compile("request_id: [a-z0-9-]{36}.*[ms|s]\)\s(.*Controller)\s--\sCompleted\s#(.*)\s--\s(.*)")
-    request_path_pattern = re.compile(",\s?:method\s?=>\s?\"(.*)\",.*\s?:path\s?=>\s?\"(.*)\",")
+
+    # 最長: .*
+    # 最短: .*?
+    # 最長: .+
+    # 最短: .+?
+    # 最長: .?
+    # 最短: .??
+    pattern                    = re.compile("request_id: [a-z0-9-]{36}.*\s--\sCompleted\s#.*\s--\s(.*)")
+    request_path_pattern       = re.compile(",\s?:method\s?=>\s?\"(.*)\",.*\s?:path\s?=>\s?\"(.*)\",")
+    request_controller_pattern = re.compile(":controller\s?=>\s?\"(.*?)\",") # 最短マッチ
+    request_action_pattern     = re.compile(":action\s?=>\s?\"(.*?)\",") # 最短マッチ
+
     # 文字に対して、色をつけているコード(ANSI color codes)
     # ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     default_log_file = '/log/development.log'
@@ -73,12 +83,15 @@ class Source(Base):
         return target_lines
 
     def _convert(self, date_time, result):
-        controller_name = result[1]
-        action_name     = result[2]
-        params          = result[3]
-        # logger.info(params)
+        params          = result[1]
+        path            = self.get_request_path(params)
+        controller_name = self.get_request_controller(params)
+        action_name     = self.get_request_action(params)
+        logger.info(path)
+        logger.info(controller_name)
+        logger.info(action_name)
         return {
-                    'word': '['+ date_time + '] ' + self.get_request_path(params) + ' => ' + controller_name + "#" + action_name,
+                    'word': '['+ date_time + '] ' + path + ' => ' + controller_name + "#" + action_name,
                     'action__path': self.get_controller_full_name(controller_name),
                     'action__pattern': '\<def ' + action_name + '\>'
                 }
@@ -87,6 +100,16 @@ class Source(Base):
         request_path = Source.request_path_pattern.search(params)
         if request_path is not None:
             return request_path[1] + ' ' + request_path[2]
+
+    def get_request_controller(self, params):
+        request_controller = Source.request_controller_pattern.search(params)
+        if request_controller is not None:
+            return request_controller[1]
+
+    def get_request_action(self, params):
+        request_action = Source.request_action_pattern.search(params)
+        if request_action is not None:
+            return request_action[1]
 
     def get_controller_full_name(self, conroller_name):
         conroller_name = inflection.underscore(conroller_name).replace('::', '/')
