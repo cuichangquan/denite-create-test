@@ -19,7 +19,7 @@ class Source(Base):
     pattern = re.compile("request_id: [a-z0-9-]{36}.*ms\)\s(.*Controller)\s--\sCompleted\s#(.*)\s--\s(.*)")
     request_path_pattern = re.compile(",\s:path\s=>\s\"(.*)\",")
     # 文字に対して、色をつけているコード(ANSI color codes)
-    ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+    # ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
     default_log_file = '/log/development.log'
 
     def __init__(self, vim):
@@ -53,18 +53,18 @@ class Source(Base):
         # logger.info(self.root_path)
         target_file = context['__target_file']
         f = open(target_file, 'r')
-        lines_with_ansi_color_code = f.readlines()
+        lines_without_ansi_color_code = f.readlines()
         f.close()
 
         lines = []
-        for line in lines_with_ansi_color_code:
-            lines.append(Source.ansi_escape.sub('', line))
+        for line in lines_without_ansi_color_code:
+            lines.append(line)
 
         target_lines = self._find_lines(lines)
         target_lines.reverse()
         return [self._convert(date_time, line) for date_time, line in target_lines]
 
-    # 2019-03-03 11:17:53.541382 I [13042:puma 003] {request_id: d25efb37-436b-4fec-968a-afe1f1f79c9b, user_type: api_call} (29.6ms) Sys::Api::OrdersController -- Completed #update -- { :controller => "Sys::Api::OrdersController"・・・ }
+    # 2019-03-03 11:17:53.541382 I [13042:puma 003] {request_id: d25efb37-436b-4fec-968a-afe1f1f79c9b, user_type: api_call} (29.6ms) Api::OrdersController -- Completed #update -- { :controller => "Api::OrdersController"・・・ }
     def _find_lines(self, lines):
         target_lines = []
         for line in lines:
