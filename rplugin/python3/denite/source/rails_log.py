@@ -34,8 +34,8 @@ class Source(Base):
 
     def __init__(self, vim):
         super().__init__(vim)
-        self.name = 'cui_api'
-        self.kind = 'file'
+        self.name = 'rails_log'
+        self.kind = 'rails_log'
 
     def on_init(self, context):
         cbname = self.vim.current.buffer.name
@@ -51,26 +51,26 @@ class Source(Base):
         #     - log/の下においてください。
         #     - vimで処理したいファイルを開いてください
         if (ext == '.log') and (buffer_name != '') and (buffer_name != 'development.log'):
-            context['__target_file'] = cbname
+            context['__target_rails_log_file'] = cbname
         else:
-            context['__target_file'] = self.root_path + Source.default_log_file
+            context['__target_rails_log_file'] = self.root_path + Source.default_log_file
 
         # ログ見たいのであれば、development.logを denite-create-test/log/にいれてください。
-        # tail -f log/cui_api.log
+        # tail -f log/rails_log.log
         if 'denite-create-test' in self.root_path:
-            fh = logging.FileHandler(self.root_path + '/log/cui_api.log')
+            fh = logging.FileHandler(self.root_path + '/log/rails_log.log')
             logger.addHandler(fh)
 
     def gather_candidates(self, context):
         # logger.info(self.root_path)
-        target_file = context['__target_file']
+        target_file = context['__target_rails_log_file']
         f = open(target_file, 'r')
         lines = f.readlines()
         f.close()
 
         target_lines = self._find_lines(lines)
         target_lines.reverse()
-        return [self._convert(line_no, date_time, line) for line_no, date_time, line in target_lines]
+        return [self._convert(line_no, date_time, line, target_file) for line_no, date_time, line in target_lines]
 
     # 2019-03-03 11:17:53.541382 I [13042:puma 003] {request_id: d25efb37-436b-4fec-968a-afe1f1f79c9b, user_type: api_call} (29.6ms) Api::OrdersController -- Completed #update -- { :controller => "Api::OrdersController"・・・ }
     def _find_lines(self, lines):
@@ -83,7 +83,7 @@ class Source(Base):
                 target_lines.append([line_no, date_time, result])
         return target_lines
 
-    def _convert(self, line_no, date_time, result):
+    def _convert(self, line_no, date_time, result, target_rails_log_file):
         params          = result[1]
         path            = self.get_request_path(params)
         controller_name = self.get_request_controller(params)
@@ -93,6 +93,8 @@ class Source(Base):
         # logger.info(action_name)
         return {
                     'word': str(line_no) + ':' + '['+ date_time + '] ' + path + ' => ' + controller_name + "#" + action_name,
+                    'rails_log_line_no': str(line_no),
+                    'target_rails_log_file': target_rails_log_file,
                     'action__path': self.get_controller_full_name(controller_name),
                     'action__pattern': '\<def ' + action_name + '\>'
                 }
