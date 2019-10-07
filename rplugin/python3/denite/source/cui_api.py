@@ -70,28 +70,29 @@ class Source(Base):
 
         target_lines = self._find_lines(lines)
         target_lines.reverse()
-        return [self._convert(date_time, line) for date_time, line in target_lines]
+        return [self._convert(line_no, date_time, line) for line_no, date_time, line in target_lines]
 
     # 2019-03-03 11:17:53.541382 I [13042:puma 003] {request_id: d25efb37-436b-4fec-968a-afe1f1f79c9b, user_type: api_call} (29.6ms) Api::OrdersController -- Completed #update -- { :controller => "Api::OrdersController"・・・ }
     def _find_lines(self, lines):
         target_lines = []
-        for line in lines:
+        for index, line in enumerate(lines):
             result = Source.pattern.search(line)
             if result is not None:
                 date_time = line[0:19]
-                target_lines.append([date_time, result])
+                line_no = index + 1
+                target_lines.append([line_no, date_time, result])
         return target_lines
 
-    def _convert(self, date_time, result):
+    def _convert(self, line_no, date_time, result):
         params          = result[1]
         path            = self.get_request_path(params)
         controller_name = self.get_request_controller(params)
         action_name     = self.get_request_action(params)
-        logger.info(path)
-        logger.info(controller_name)
-        logger.info(action_name)
+        # logger.info(path)
+        # logger.info(controller_name)
+        # logger.info(action_name)
         return {
-                    'word': '['+ date_time + '] ' + path + ' => ' + controller_name + "#" + action_name,
+                    'word': str(line_no) + ':' + '['+ date_time + '] ' + path + ' => ' + controller_name + "#" + action_name,
                     'action__path': self.get_controller_full_name(controller_name),
                     'action__pattern': '\<def ' + action_name + '\>'
                 }
