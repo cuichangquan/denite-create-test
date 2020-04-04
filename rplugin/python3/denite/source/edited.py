@@ -15,6 +15,8 @@ logger = logging.getLogger('DeniteSourceEditedLog')
 logger.setLevel(10)
 
 class Source(Base):
+    git_user = os.environ.get('GIT_USER_NAME')
+    edited_from = '2018-05-01'
 
     def __init__(self, vim):
         super().__init__(vim)
@@ -32,10 +34,7 @@ class Source(Base):
     def gather_candidates(self, context):
         args = context['args']
 
-        # TODO: 環境変数を利用する
-        # 崔 昌権
-        # 2018-05-01
-        cmd_str1 = ('git log --author="崔 昌権" --after="2018-05-01" --pretty=format:%H')
+        cmd_str1 = (f"git log --author=\"{Source.git_user}\" --after=\"{Source.edited_from}\" --pretty=format:%H")
         commits = self.exec_cmd(cmd_str1)
         commits = " ".join( commits.decode('utf-8').split('\n') )
 
